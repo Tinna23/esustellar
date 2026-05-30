@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { QueryClientProvider } from '@tanstack/react-query';
 import * as Notifications from 'expo-notifications';
 import { Slot, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -18,8 +19,9 @@ import { ThemeProvider, useTheme } from '../context/ThemeContext';
 import { useAutoLock } from '../hooks/useAutoLock';
 import i18n from '../i18n';
 import { getRouteFromNotificationData } from '../services/notifications/notificationRouting';
+import { queryClient } from '../services/queryClient';
 import { biometricService } from '../services/security';
-import { logger } from '../utils/logger';
+import { logger } from '../services/logger';
 
 const ONBOARDING_KEY = 'onboardingComplete';
 const BIOMETRIC_LOCK_KEY = 'biometricLockEnabled';
@@ -233,11 +235,13 @@ function RootLayoutContent() {
 
 export default function RootLayout() {
   return (
-    <I18nextProvider i18n={i18n}>
-      <ThemeProvider>
-        <RootLayoutContent />
-      </ThemeProvider>
-    </I18nextProvider>
+    <QueryClientProvider client={queryClient}>
+      <I18nextProvider i18n={i18n}>
+        <ThemeProvider>
+          <RootLayoutContent />
+        </ThemeProvider>
+      </I18nextProvider>
+    </QueryClientProvider>
   );
 }
 
@@ -252,7 +256,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#6C63FF',
+    backgroundColor: '#0B1220',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 9999,

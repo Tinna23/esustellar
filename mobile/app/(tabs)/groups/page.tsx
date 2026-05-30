@@ -19,6 +19,7 @@ import {
   TextInput,
 } from '../../../components/ui';
 import { useDebounce } from '../../../hooks/useDebounce';
+import { useRefresh } from '../../../hooks/useRefresh';
 import { formatXLM } from '../../../utils/stellar';
 
 type GroupStatus = 'Active' | 'Open' | 'Paused' | 'Closed' | 'Pending';
@@ -165,28 +166,36 @@ export default function GroupsPage() {
   const router = useRouter();
   const { t } = useTranslation();
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
-  const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  const fetchGroups = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const fetchGroups = useCallback(
+    async ({ showFullLoader = true } = {}) => {
+      if (showFullLoader) {
+        setLoading(true);
+      }
+      setError(null);
 
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    if (Math.random() < 0.3) {
-      setError(t('groups.errors.fetchFailed'));
-      setLoading(false);
-      return;
-    }
+      if (Math.random() < 0.3) {
+        setError(t('groups.errors.fetchFailed'));
+        if (showFullLoader) {
+          setLoading(false);
+        }
+        return;
+      }
 
-    setGroups(MOCK_GROUPS);
-    setLoading(false);
-  }, [t]);
+      setGroups(MOCK_GROUPS);
+      if (showFullLoader) {
+        setLoading(false);
+      }
+    },
+    [t],
+  );
 
   useEffect(() => {
     void fetchGroups();
@@ -212,11 +221,11 @@ export default function GroupsPage() {
     [activeFilter, normalizedSearchQuery, persistedGroupIds],
   );
 
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await fetchGroups();
-    setRefreshing(false);
-  }, [fetchGroups]);
+  const refreshGroups = useCallback(
+    () => fetchGroups({ showFullLoader: false }),
+    [fetchGroups],
+  );
+  const { refreshing, onRefresh } = useRefresh(refreshGroups);
 
   const handlePressGroup = useCallback(
     (groupId: string) => {

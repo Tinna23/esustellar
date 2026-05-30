@@ -6,7 +6,26 @@ export const HAPTICS_ENABLED_STORAGE_KEY = 'esustellar_haptics_enabled';
 
 let cachedHapticsEnabled: boolean | null = null;
 
+type ImpactLevel = 'light' | 'medium' | 'heavy';
+
 const isSupportedPlatform = (): boolean => Platform.OS !== 'web';
+
+function runImpact(level: ImpactLevel) {
+  if (!isSupportedPlatform()) return;
+
+  const styleMap = {
+    light: Haptics.ImpactFeedbackStyle.Light,
+    medium: Haptics.ImpactFeedbackStyle.Medium,
+    heavy: Haptics.ImpactFeedbackStyle.Heavy,
+  };
+
+  return runHaptic(() => Haptics.impactAsync(styleMap[level]));
+}
+
+function runNotification(type: Haptics.NotificationFeedbackType) {
+  if (!isSupportedPlatform()) return;
+  return runHaptic(() => Haptics.notificationAsync(type));
+}
 
 export const getHapticsEnabled = async (): Promise<boolean> => {
   if (cachedHapticsEnabled !== null) {
@@ -56,29 +75,14 @@ const runHaptic = async (callback: () => Promise<unknown>): Promise<void> => {
 };
 
 export const triggerHapticFeedback = {
-  light: (): Promise<void> =>
-    runHaptic(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)),
-
-  medium: (): Promise<void> =>
-    runHaptic(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)),
-
-  heavy: (): Promise<void> =>
-    runHaptic(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)),
-
-  selection: (): Promise<void> => runHaptic(() => Haptics.selectionAsync()),
-
-  success: (): Promise<void> =>
-    runHaptic(() =>
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success),
-    ),
-
-  warning: (): Promise<void> =>
-    runHaptic(() =>
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning),
-    ),
-
-  error: (): Promise<void> =>
-    runHaptic(() =>
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error),
-    ),
+  light: () => runImpact('light'),
+  medium: () => runImpact('medium'),
+  heavy: () => runImpact('heavy'),
+  selection: () => {
+    if (!isSupportedPlatform()) return;
+    return runHaptic(() => Haptics.selectionAsync());
+  },
+  success: () => runNotification(Haptics.NotificationFeedbackType.Success),
+  warning: () => runNotification(Haptics.NotificationFeedbackType.Warning),
+  error: () => runNotification(Haptics.NotificationFeedbackType.Error),
 };

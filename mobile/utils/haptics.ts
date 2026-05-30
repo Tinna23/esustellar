@@ -4,4 +4,4 @@ export {
   loadHapticsPreference,
   setHapticsEnabled,
   triggerHapticFeedback,
-} from '../services/haptics/index';
+} from '../services/haptics';

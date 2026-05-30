@@ -13,7 +13,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useInvalidateNotifications } from '../../hooks/useNotifications';
 import { useRefresh } from '../../hooks/useRefresh';
 import { scheduleLocalNotification } from '../../services/notifications/notificationService';
-import { logger } from '../../utils/logger';
+import { logger } from '../../services/logger';
 
 export default function NotificationsScreen() {
   const [scheduling, setScheduling] = useState(false);
