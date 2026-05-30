@@ -14,6 +14,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import {
   Badge,
+  EmptyState,
   ErrorState,
   LoadingSkeleton,
   TextInput,
@@ -291,11 +292,11 @@ export default function GroupsPage() {
       ) : error ? (
         <ErrorState message={error} onRetry={fetchGroups} />
       ) : (
-        <FlatList
+        <FlatList<Group>
           data={filteredGroups}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item: Group) => item.id}
           renderItem={renderGroup}
-          getItemLayout={(_, index) => ({
+          getItemLayout={(_: unknown, index: number) => ({
             length: 110,
             offset: 110 * index,
             index,
@@ -312,12 +313,12 @@ export default function GroupsPage() {
             />
           }
           ListEmptyComponent={
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyTitle}>{t('groups.emptyTitle')}</Text>
-              <Text style={styles.emptyMessage}>
-                {t('groups.emptyMessage')}
-              </Text>
-            </View>
+            <EmptyState
+              tone="light"
+              illustration="groups"
+              title={t('groups.emptyTitle')}
+              message={t('groups.emptyMessage')}
+            />
           }
         />
       )}
@@ -427,20 +428,5 @@ const styles = StyleSheet.create({
   cardMeta: {
     fontSize: 14,
     color: '#475569',
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#0F172A',
-    marginBottom: 8,
-  },
-  emptyMessage: {
-    fontSize: 14,
-    color: '#475569',
-    textAlign: 'center',
   },
 });

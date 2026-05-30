@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useState, useCallback, useRef } from 'react';
 
 /**
  * Hook that manages pull-to-refresh state.

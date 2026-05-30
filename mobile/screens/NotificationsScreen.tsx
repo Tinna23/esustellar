@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo } from 'react';
 import { View, FlatList } from 'react-native';
 import { useNotificationsStore } from '../stores/notificationsStore';
 import { NotificationItem } from '../components/NotificationItem';
+import { EmptyState } from '../components/ui';
 import { Notification } from '../types/notification';
 
 const MOCK_NOTIFICATIONS: Notification[] = [
@@ -42,8 +43,17 @@ export const NotificationsScreen = () => {
     <View>
       <FlatList
         data={notifications}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: Notification) => item.id}
         renderItem={renderItem}
+        contentContainerStyle={notifications.length === 0 ? { flexGrow: 1 } : undefined}
+        ListEmptyComponent={
+          <EmptyState
+            tone="light"
+            illustration="notifications"
+            title="All caught up"
+            message="You have no new notifications."
+          />
+        }
       />
     </View>
   );

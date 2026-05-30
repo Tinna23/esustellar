@@ -50,6 +50,7 @@ export default function TransactionHistory() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
@@ -61,21 +62,20 @@ export default function TransactionHistory() {
         setLoadingMore(true);
       }
 
-      try {
-        await new Promise((r) => setTimeout(r, 600));
-        const data = generateMockTransactions(pageNum);
-        setTransactions((prev: Transaction[]) =>
-          reset ? data : [...prev, ...data],
-        );
-        setHasMore(pageNum < 2);
-        setPage(pageNum);
-      } finally {
-        setLoading(false);
-        setLoadingMore(false);
-      }
-    },
-    [],
-  );
+    try {
+      await new Promise((r) => setTimeout(r, 600));
+      const data = generateMockTransactions(pageNum);
+      setTransactions((prev: Transaction[]) =>
+        reset ? data : [...prev, ...data],
+      );
+      setHasMore(pageNum < 2);
+      setPage(pageNum);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+      setRefreshing(false);
+    }
+  }, []);
 
   useEffect(() => {
     void loadPage(0);
@@ -157,9 +157,8 @@ export default function TransactionHistory() {
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
-              onRefresh={onRefresh}
+              onRefresh={handleRefresh}
               tintColor="#6366F1"
-              colors={['#6366F1']}
             />
           }
           onEndReached={handleLoadMore}
