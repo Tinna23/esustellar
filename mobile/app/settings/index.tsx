@@ -162,6 +162,11 @@ export default function SettingsScreen() {
 
   const handleLocalToggle = async (value: boolean) => {
     if (value) {
+      if (biometricCap.status !== SecurityStatus.AVAILABLE) {
+        Alert.alert('Unavailable', 'Set up biometrics first.');
+        return;
+      }
+
       const result = await biometricService.authenticate('Enable lock');
       if (!result.success) return;
     }

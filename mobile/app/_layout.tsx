@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   AppState,
   AppStateStatus,
+  Pressable,
   StyleSheet,
   Text,
   View,
@@ -61,6 +62,10 @@ function RootLayoutContent() {
       setLocked(false);
     }
   }, []);
+
+  const openPinFallback = useCallback(() => {
+    router.push('/security/enter-pin?reason=biometric-fallback');
+  }, [router]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener(
@@ -221,6 +226,9 @@ function RootLayoutContent() {
           <Text style={styles.lockHint} onPress={promptBiometric}>
             {t('lock.tapToUnlock')}
           </Text>
+          <Pressable style={styles.lockButton} onPress={openPinFallback}>
+            <Text style={styles.lockButtonText}>Use PIN</Text>
+          </Pressable>
         </View>
       )}
     </View>
