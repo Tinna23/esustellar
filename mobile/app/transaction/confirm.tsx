@@ -184,7 +184,7 @@ export default function TransactionConfirmScreen() {
     items.push({ label: "You are sending", value: `${amount} XLM`, highlight: true });
 
     if (destination) {
-      items.push({ label: "To", value: truncate(destination) });
+      items.push({ label: "To", value: truncate(destination), mono: true });
     }
 
     items.push({ label: "Network Fee", value: `${fee} XLM`, warn: isHighFee });
@@ -408,11 +408,13 @@ function Row({
   value,
   highlight,
   warn,
+  mono,
 }: {
   label: string;
   value: string;
   highlight?: boolean;
   warn?: boolean;
+  mono?: boolean;
 }) {
   return (
     <View style={styles.row}>
@@ -422,6 +424,7 @@ function Row({
           styles.rowValue,
           highlight && styles.rowValueHighlight,
           warn && styles.rowValueWarn,
+          mono && styles.rowValueMono,
         ]}
         numberOfLines={1}
         ellipsizeMode="middle"
@@ -511,6 +514,7 @@ const styles = StyleSheet.create({
   },
   rowValueHighlight: { color: "#4ADE80", fontSize: 18 },
   rowValueWarn: { color: "#F59E0B" },
+  rowValueMono: { fontFamily: "monospace", fontSize: 13 },
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: "#334155" },
 
   // Checkbox
