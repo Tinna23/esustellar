@@ -1,6 +1,10 @@
 {
   "name": "@esustellar/sdk",
   "version": "1.0.0",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js"
+  },
   "description": "TypeScript SDK for interacting with EsuStellar Soroban smart contracts",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
