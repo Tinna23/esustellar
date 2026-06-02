@@ -2,9 +2,10 @@ import React, { useCallback, useMemo } from 'react';
 import { Platform, Pressable, Text, View, StyleSheet } from 'react-native';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { Notification } from '../types/notification';
+import { Notification, NOTIFICATION_CATEGORIES } from '../types/notification';
 import { useNotificationsStore } from '../stores/notificationsStore';
 import { runAfterInteractions } from '../services/performance/interactionManager';
+import { useMarkNotificationRead } from '../hooks/useNotifications';
 
 dayjs.extend(relativeTime);
 
@@ -19,28 +20,56 @@ const typeToEmoji: Record<NonNullable<Notification['type']>, string> = {
   status: '📢',
 };
 
+const getNotificationCategory = (notification: Notification) => {
+  if (!notification.type && !notification.category) return 'updates';
+  
+  const category = notification.category;
+  if (category && category !== 'all') return category;
+
+  switch (notification.type) {
+    case 'payout':
+      return 'payments';
+    case 'contribution':
+      return 'payments';
+    case 'member':
+      return 'members';
+    case 'status':
+      return 'updates';
+    default:
+      return 'updates';
+  }
+};
+
 const arePropsEqual = (prev: Props, next: Props) =>
   prev.item.id === next.item.id &&
   prev.item.title === next.item.title &&
   prev.item.message === next.item.message &&
   prev.item.read === next.item.read &&
   prev.item.createdAt === next.item.createdAt &&
-  prev.item.type === next.item.type;
+  prev.item.type === next.item.type &&
+  prev.item.category === next.item.category;
 
 function NotificationItemComponent({ item }: Props) {
   const markRead = useNotificationsStore((state) => state.markRead);
+  const markNotificationReadMutation = useMarkNotificationRead();
 
-  const handlePress = useCallback(() => {
+  const handlePress = useCallback(async () => {
     if (!item.read) {
       // Defer the store write until after the press animation settles.
       // This prevents a synchronous state update from blocking the touch
       // response on Android, where JS-thread work during a press is noticeable.
       runAfterInteractions(() => markRead(item.id), 'notification-mark-read');
+      // Optimistic update
+      markRead(item.id);
+      // Sync with backend
+      await markNotificationReadMutation.mutateAsync(item.id);
     }
-  }, [item.id, item.read, markRead]);
+  }, [item.id, item.read, markRead, markNotificationReadMutation]);
 
   const relativeDate = useMemo(() => dayjs(item.createdAt).fromNow(), [item.createdAt]);
   const icon = typeToEmoji[item.type ?? 'status'];
+  const category = useMemo(() => getNotificationCategory(item), [item]);
+  const categoryInfo = NOTIFICATION_CATEGORIES[category];
 
   return (
     <Pressable
@@ -63,6 +92,11 @@ function NotificationItemComponent({ item }: Props) {
               {item.title}
             </Text>
             <Text style={styles.date}>{relativeDate}</Text>
+          </View>
+          <View style={styles.metaRow}>
+            <Text style={[styles.categoryTag, { backgroundColor: categoryInfo.color + '20' }]}>
+              {categoryInfo.emoji} {categoryInfo.label}
+            </Text>
           </View>
           <Text style={styles.message} numberOfLines={2}>
             {item.message}
@@ -113,10 +147,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   title: {
     fontSize: 15,
+    flex: 1,
   },
   titleUnread: {
     fontWeight: '700',
@@ -128,6 +163,20 @@ const styles = StyleSheet.create({
   date: {
     fontSize: 12,
     color: '#6B7280',
+    marginLeft: 8,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  categoryTag: {
+    fontSize: 11,
+    fontWeight: '600',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    color: '#4B5563',
   },
   message: {
     fontSize: 13,
