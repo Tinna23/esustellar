@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { Notification } from '../types/notification';
 import { useNotificationsStore } from '../stores/notificationsStore';
+import { useMarkNotificationRead } from '../hooks/useNotifications';
 
 dayjs.extend(relativeTime);
 
@@ -28,18 +29,26 @@ const arePropsEqual = (prev: Props, next: Props) =>
 
 function NotificationItemComponent({ item }: Props) {
   const markRead = useNotificationsStore((state) => state.markRead);
+  const markNotificationReadMutation = useMarkNotificationRead();
 
-  const handlePress = useCallback(() => {
+  const handlePress = useCallback(async () => {
     if (!item.read) {
+      // Optimistic update
       markRead(item.id);
+      // Sync with backend
+      await markNotificationReadMutation.mutateAsync(item.id);
     }
-  }, [item.id, item.read, markRead]);
+  }, [item.id, item.read, markRead, markNotificationReadMutation]);
 
   const relativeDate = useMemo(() => dayjs(item.createdAt).fromNow(), [item.createdAt]);
   const icon = typeToEmoji[item.type ?? 'status'];
 
   return (
-    <TouchableOpacity onPress={handlePress} style={styles.touchable}>
+    <TouchableOpacity 
+      onPress={handlePress} 
+      style={styles.touchable}
+      disabled={markNotificationReadMutation.isPending}
+    >
       <View style={[styles.container, item.read ? styles.read : styles.unread]}>
         <View style={styles.iconWrapper}>
           <Text style={styles.icon}>{icon}</Text>

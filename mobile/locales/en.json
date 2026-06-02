@@ -115,6 +115,7 @@
     "subtitle": "Trigger a local notification to verify foreground banners and tap navigation.",
     "scheduleGroupDetail": "Schedule Group Detail Notification",
     "scheduleFallback": "Schedule Fallback Notification",
+    "markAllAsRead": "Mark all as read",
     "contributionDueTitle": "Contribution due",
     "contributionDueBody": "Tap to open the group detail screen.",
     "unknownDestinationTitle": "Unknown destination",

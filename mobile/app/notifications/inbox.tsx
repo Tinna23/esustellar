@@ -6,12 +6,13 @@ import {
   StyleSheet,
   RefreshControl,
   Text,
+  Pressable,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuthStore } from '../../store/authStore';
 import { useNotificationsStore } from '../../stores/notificationsStore';
-import { useUserNotifications } from '../../hooks/useNotifications';
+import { useUserNotifications, useMarkAllNotificationsRead } from '../../hooks/useNotifications';
 import { useRefresh } from '../../hooks/useRefresh';
 import { NotificationItem } from '../../components/NotificationItem';
 import { EmptyState } from '../../components/ui';
@@ -27,10 +28,13 @@ export default function NotificationInboxScreen() {
   const { colors } = useTheme();
   const wallet = useAuthStore((state) => state.wallet);
   const notifications = useNotificationsStore((state) => state.notifications);
+  const unreadCount = useNotificationsStore((state) => state.unreadCount);
   const setNotifications = useNotificationsStore((state) => state.setNotifications);
+  const markAllRead = useNotificationsStore((state) => state.markAllRead);
 
   const userAddress = wallet?.publicKey ?? '';
   const { data, refetch } = useUserNotifications(userAddress);
+  const markAllMutation = useMarkAllNotificationsRead();
 
   useEffect(() => {
     if (data?.success) {
@@ -53,10 +57,19 @@ export default function NotificationInboxScreen() {
     [notifications],
   );
 
+  const handleMarkAllAsRead = useCallback(async () => {
+    // Optimistic update
+    markAllRead();
+    // Sync with backend
+    await markAllMutation.mutateAsync(userAddress);
+  }, [markAllRead, userAddress, markAllMutation]);
+
   const renderItem = useCallback(
     ({ item }: { item: Notification }) => <NotificationItem item={item} />,
     [],
   );
+
+  const hasUnread = unreadCount > 0;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
@@ -77,7 +90,26 @@ export default function NotificationInboxScreen() {
         }
         ListHeaderComponent={() => (
           <View style={styles.header}>
-            <Text style={[styles.title, { color: colors.text }]}>{t('notifications.title')}</Text>
+            <View style={styles.headerTop}>
+              <Text style={[styles.title, { color: colors.text }]}>{t('notifications.title')}</Text>
+              {hasUnread && (
+                <Pressable
+                  onPress={handleMarkAllAsRead}
+                  disabled={markAllMutation.isPending}
+                  style={({ pressed }) => [
+                    styles.markAllButton,
+                    { 
+                      backgroundColor: colors.accent,
+                      opacity: pressed || markAllMutation.isPending ? 0.7 : 1,
+                    },
+                  ]}
+                >
+                  <Text style={styles.markAllButtonText}>
+                    {t('notifications.markAllAsRead')}
+                  </Text>
+                </Pressable>
+              )}
+            </View>
             <Text style={[styles.subtitle, { color: colors.subtext }]}> 
               {t('notifications.subtitle')}
             </Text>
@@ -105,10 +137,25 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 10,
   },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
   title: {
     fontSize: 28,
     fontWeight: '800',
-    marginBottom: 6,
+  },
+  markAllButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  markAllButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
   },
   subtitle: {
     fontSize: 15,

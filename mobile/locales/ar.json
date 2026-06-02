@@ -115,6 +115,7 @@
     "subtitle": "قم بتشغيل تنبيه محلي للتحقق من لافتات المقدمة والتنقل بالنقر.",
     "scheduleGroupDetail": "جدولة تنبيه تفاصيل المجموعة",
     "scheduleFallback": "جدولة تنبيه بديل",
+    "markAllAsRead": "وضع علامة على الكل كمقروءة",
     "contributionDueTitle": "استحقاق المساهمة",
     "contributionDueBody": "انقر لفتح شاشة تفاصيل المجموعة.",
     "unknownDestinationTitle": "وجهة غير معروفة",

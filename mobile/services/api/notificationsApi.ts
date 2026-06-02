@@ -55,6 +55,52 @@ class NotificationsApiService {
       };
     }
   }
+
+  /**
+   * Mark a single notification as read
+   */
+  async markNotificationRead(notificationId: string): Promise<ApiResponse<void>> {
+    try {
+      logger.debug('NotificationsApi', `Marking notification ${notificationId} as read`);
+
+      // Mock API call - replace with actual implementation
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      return {
+        success: true,
+        data: undefined,
+      };
+    } catch (error) {
+      logger.error('NotificationsApi', `Failed to mark notification ${notificationId} as read`, error);
+      return {
+        success: false,
+        error: 'Failed to mark notification as read',
+      };
+    }
+  }
+
+  /**
+   * Mark all notifications as read for a user
+   */
+  async markAllNotificationsRead(userAddress: string): Promise<ApiResponse<void>> {
+    try {
+      logger.debug('NotificationsApi', 'Marking all notifications as read');
+
+      // Mock API call - replace with actual implementation
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      return {
+        success: true,
+        data: undefined,
+      };
+    } catch (error) {
+      logger.error('NotificationsApi', 'Failed to mark all notifications as read', error);
+      return {
+        success: false,
+        error: 'Failed to mark all notifications as read',
+      };
+    }
+  }
 }
 
 export const notificationsApi = new NotificationsApiService();
